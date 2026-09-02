@@ -17,10 +17,14 @@ services:
     region: ohio
     rootDir: backend
 
+    # --include=dev es obligatorio: NODE_ENV=production le dice a npm que
+    # omita las devDependencies, y ahi viven vite (compila el frontend) y el
+    # CLI de prisma (corre las migraciones). Sin esto el build falla.
+    #
     # install → genera el cliente Prisma (postinstall)
     # build   → compila el frontend que despues sirve Express
     # migrate → aplica las migraciones a la base
-    buildCommand: npm install && npm run build && npx prisma migrate deploy
+    buildCommand: npm install --include=dev && npm run build && npx prisma migrate deploy
     startCommand: npm start
 
     healthCheckPath: /api/health
