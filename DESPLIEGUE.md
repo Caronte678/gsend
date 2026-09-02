@@ -52,19 +52,21 @@ piense que se rompió.
 
 ## 2. Subir el código a GitHub
 
+El repositorio local ya está creado y con los commits hechos. Solo falta subirlo.
+
+1. Entrá a [github.com](https://github.com) → **New repository**.
+2. Ponele nombre (`gsend`) y dejalo **vacío**: sin README, sin .gitignore, sin licencia.
+3. Podés hacerlo **privado**: Render se conecta igual.
+4. Copiá los comandos que GitHub te muestra en *"…or push an existing repository"*:
+
 ```bash
 cd gsend
-git add -A
-git commit -m "GSend listo para desplegar"
+git remote add origin https://github.com/TU-USUARIO/gsend.git
+git push -u origin main
 ```
 
-Creá un repositorio en [github.com](https://github.com) y seguí las instrucciones
-que te da para subirlo (`git remote add origin ...` y `git push`).
-
-Podés hacerlo **privado**: Render se conecta igual.
-
 > `.gitignore` ya excluye `backend/.env`, así que tus credenciales locales no se
-> suben. Verificalo con `git status` antes del primer commit.
+> suben. Ya está verificado en los commits existentes.
 
 ---
 
