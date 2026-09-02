@@ -35,6 +35,9 @@ if (!u.pathname || u.pathname === '/') errores.push('No indica el nombre de la b
 if (u.hostname.includes('-pooler')) {
   avisos.push('Estás usando la conexión "pooled". Para GSend conviene la directa (sin -pooler): Prisma maneja su propio pool y las migraciones funcionan mejor.');
 }
+if (u.searchParams.get('channel_binding')) {
+  avisos.push('Trae channel_binding. Si la conexion falla mas abajo, borra \'&channel_binding=require\' del final: Prisma no siempre lo soporta y no hace falta, sslmode=require ya cifra la conexion.');
+}
 if (!u.searchParams.get('sslmode')) {
   avisos.push('No trae ?sslmode=require. Las bases en la nube casi siempre lo necesitan.');
 }
@@ -45,6 +48,7 @@ console.log('  base:      ' + u.pathname.slice(1));
 console.log('  usuario:   ' + u.username);
 console.log('  contraseña: ' + (u.password ? '(presente, no se muestra)' : '(FALTA)'));
 console.log('  sslmode:   ' + (u.searchParams.get('sslmode') ?? '(no especificado)'));
+console.log('  pooling:   ' + (u.hostname.includes('-pooler') ? 'SI (conviene la directa)' : 'no (correcto)'));
 
 if (errores.length) {
   console.error('\n❌ Problemas:');
