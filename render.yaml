@@ -11,7 +11,10 @@ services:
     name: gsend
     runtime: node
     plan: free
-    region: oregon
+    # Debe coincidir con la region de Neon: la app hace varias consultas por
+    # pantalla y cruzar EEUU en cada una agrega cientos de milisegundos.
+    # Ojo: Render no permite cambiar la region despues de crear el servicio.
+    region: ohio
     rootDir: backend
 
     # install → genera el cliente Prisma (postinstall)
