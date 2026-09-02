@@ -70,6 +70,32 @@ git push -u origin main
 
 ---
 
+## 2b. Verificar la cadena antes de desplegar
+
+Para no descubrir un error recien cuando Render falle el build:
+
+1. Creá el archivo `backend/.env.produccion` con una sola línea:
+
+   ```
+   DATABASE_URL="postgresql://...tu cadena de Neon..."
+   ```
+
+2. Corré:
+
+   ```bash
+   cd backend
+   npm run verificar
+   ```
+
+Te avisa si quedó la conexión *pooled*, si falta `sslmode`, y prueba la
+conexión de verdad. Cuando diga **CONECTADO**, está lista para Render.
+
+> Ese archivo está en `.gitignore` y es aparte de `backend/.env` a propósito:
+> si pusieras la cadena de Neon en `.env`, tu app local pasaría a escribir sobre
+> la base real de la clienta sin que lo notes.
+
+---
+
 ## 3. Crear el servicio (Render)
 
 El repositorio incluye `render.yaml`, así que no hay que llenar formularios:
