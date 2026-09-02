@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ConfigProvider } from './context/ConfigContext';
 import { ToastProvider } from './context/ToastContext';
+import ConexionBanner from './components/ConexionBanner';
 
 import Login          from './pages/Login';
 import Dashboard      from './pages/Dashboard';
@@ -23,6 +24,7 @@ export default function App() {
     <AuthProvider>
       <ConfigProvider>
         <ToastProvider>
+        <ConexionBanner />
         <BrowserRouter>
           <Routes>
             {/* Publica */}

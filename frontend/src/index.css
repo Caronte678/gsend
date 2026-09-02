@@ -549,3 +549,46 @@ body {
 ::-webkit-scrollbar-track { background: var(--clr-bg); }
 ::-webkit-scrollbar-thumb { background: var(--clr-border); border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--clr-pink); }
+
+/* ── Aviso de conexión lenta ──────────────────────────────────────── */
+/* Aparece cuando una petición tarda más de 3s, típicamente porque el
+   servidor gratuito estaba dormido y está despertando. */
+.conexion-banner {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(460px, calc(100vw - 32px));
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  box-shadow: 0 8px 28px rgba(58,46,43,0.16);
+  animation: conexion-entra var(--t-mid);
+}
+.conexion-banner .spinner-border { color: var(--clr-pink); flex-shrink: 0; }
+.conexion-banner-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--clr-text);
+  min-width: 0;
+}
+.conexion-banner-texto span { color: var(--clr-text-muted); font-size: 12px; }
+.conexion-banner-reloj {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--clr-text-muted);
+}
+@keyframes conexion-entra {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
