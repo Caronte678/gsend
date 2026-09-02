@@ -1,0 +1,39 @@
+# GSend — configuración de despliegue para Render
+#
+# En Render: New → Blueprint → conectá este repositorio.
+# Render lee este archivo y crea el servicio con todo configurado.
+#
+# Después solo hay que cargar a mano DATABASE_URL (la cadena de Neon),
+# porque es la única que no se puede generar automáticamente.
+
+services:
+  - type: web
+    name: gsend
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+
+    # install → genera el cliente Prisma (postinstall)
+    # build   → compila el frontend que despues sirve Express
+    # migrate → aplica las migraciones a la base
+    buildCommand: npm install && npm run build && npx prisma migrate deploy
+    startCommand: npm start
+
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # Render genera un secreto aleatorio y seguro la primera vez.
+      - key: JWT_SECRET
+        generateValue: true
+
+      - key: JWT_EXPIRES_IN
+        value: 8h
+
+      # Se carga a mano desde el panel: la cadena de conexión de Neon.
+      # Acordate del ?sslmode=require al final.
+      - key: DATABASE_URL
+        sync: false

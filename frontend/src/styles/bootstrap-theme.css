@@ -1,0 +1,320 @@
+/*
+ * GSend — Bootstrap 5 Theme Override
+ * Reemplaza TODA la paleta de Bootstrap con los colores de bykary.design
+ * Se importa DESPUÉS de bootstrap/dist/css/bootstrap.min.css (ver main.jsx)
+ * para ganar en la cascada.
+ * ─────────────────────────────────────────────────────────────────────
+ */
+
+/* ── 1. Override de variables CSS de Bootstrap 5 ─────────────────── */
+:root {
+  /* Colores principales */
+  --bs-primary:           #EFB8AD;
+  --bs-primary-rgb:       239, 184, 173;
+  --bs-secondary:         #A8CCDB;
+  --bs-secondary-rgb:     168, 204, 219;
+  --bs-success:           #6DBF9A;
+  --bs-success-rgb:       109, 191, 154;
+  --bs-warning:           #D4A44A;
+  --bs-warning-rgb:       212, 164, 74;
+  --bs-danger:            #D96E6E;
+  --bs-danger-rgb:        217, 110, 110;
+  --bs-info:              #A8CCDB;
+  --bs-info-rgb:          168, 204, 219;
+  --bs-light:             #FAF8F6;
+  --bs-dark:              #3A2E2B;
+
+  /* Body */
+  --bs-body-color:        #3A2E2B;
+  --bs-body-bg:           #FAF8F6;
+  --bs-body-font-family:  'Inter', system-ui, sans-serif;
+  --bs-body-font-size:    0.9375rem;
+  --bs-body-line-height:  1.55;
+
+  /* Borders */
+  --bs-border-color:      #EAE0DC;
+  --bs-border-color-translucent: rgba(58, 46, 43, 0.10);
+  --bs-border-radius:     10px;
+  --bs-border-radius-sm:  8px;
+  --bs-border-radius-lg:  16px;
+  --bs-border-radius-xl:  22px;
+  --bs-border-radius-xxl: 28px;
+  --bs-border-radius-pill: 9999px;
+
+  /* Links */
+  --bs-link-color:        #D49088;
+  --bs-link-hover-color:  #C07870;
+
+  /* Shadows */
+  --bs-box-shadow-sm: 0 1px 4px rgba(58, 46, 43, 0.07);
+  --bs-box-shadow:    0 4px 16px rgba(58, 46, 43, 0.09);
+  --bs-box-shadow-lg: 0 8px 32px rgba(58, 46, 43, 0.11);
+
+  /* Focus */
+  --bs-focus-ring-color: rgba(239, 184, 173, 0.35);
+  --bs-focus-ring-width: 3px;
+
+  /* Form */
+  --bs-form-valid-color:   #3D9E6E;
+  --bs-form-invalid-color: #D96E6E;
+}
+
+/* ── 2. Buttons — override colores generados por Bootstrap ─────────── */
+
+/* Primary (rosa blush) */
+.btn-primary {
+  --bs-btn-color:              #fff;
+  --bs-btn-bg:                 #EFB8AD;
+  --bs-btn-border-color:       #EFB8AD;
+  --bs-btn-hover-color:        #fff;
+  --bs-btn-hover-bg:           #D9A098;
+  --bs-btn-hover-border-color: #D9A098;
+  --bs-btn-active-bg:          #CC9088;
+  --bs-btn-focus-shadow-rgb:   239, 184, 173;
+  --bs-btn-disabled-bg:        #EFB8AD;
+  font-weight: 500;
+  box-shadow: 0 4px 14px rgba(239, 184, 173, 0.35);
+  transition: all 0.15s ease;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(239, 184, 173, 0.45); }
+.btn-primary:active { transform: translateY(0); }
+
+/* Secondary (azul powder) */
+.btn-secondary {
+  --bs-btn-color:              #4A7E94;
+  --bs-btn-bg:                 #E0EFF5;
+  --bs-btn-border-color:       #A8CCDB;
+  --bs-btn-hover-color:        #fff;
+  --bs-btn-hover-bg:           #A8CCDB;
+  --bs-btn-hover-border-color: #A8CCDB;
+  --bs-btn-active-bg:          #8BBBD0;
+  font-weight: 500;
+}
+
+/* Outline primary */
+.btn-outline-primary {
+  --bs-btn-color:              #D9A098;
+  --bs-btn-border-color:       #EFB8AD;
+  --bs-btn-hover-color:        #fff;
+  --bs-btn-hover-bg:           #EFB8AD;
+  --bs-btn-hover-border-color: #EFB8AD;
+}
+
+/* Danger */
+.btn-danger {
+  --bs-btn-color:        #fff;
+  --bs-btn-bg:           #D96E6E;
+  --bs-btn-border-color: #D96E6E;
+  --bs-btn-hover-bg:     #C85E5E;
+}
+
+/* Ghost / outline-light */
+.btn-outline-secondary {
+  --bs-btn-color:              #9A8480;
+  --bs-btn-border-color:       #EAE0DC;
+  --bs-btn-hover-color:        #3A2E2B;
+  --bs-btn-hover-bg:           #F7F0EE;
+  --bs-btn-hover-border-color: #EFB8AD;
+}
+
+/* All buttons: redondeados */
+.btn { border-radius: var(--bs-border-radius-sm) !important; font-family: var(--bs-body-font-family); }
+.btn-sm { border-radius: 6px !important; }
+
+/* ── 3. Navbar ──────────────────────────────────────────────────────── */
+.navbar {
+  background: #fff !important;
+  border-bottom: 1px solid #EAE0DC;
+  box-shadow: 0 1px 6px rgba(58, 46, 43, 0.06);
+}
+.navbar-brand { font-weight: 700; color: #3A2E2B !important; }
+.nav-link { color: #9A8480 !important; font-weight: 500; border-radius: 8px; }
+.nav-link:hover, .nav-link.active { color: #D9A098 !important; background: #FAE8E5; }
+
+/* ── 4. Cards ────────────────────────────────────────────────────────── */
+.card {
+  border: 1px solid var(--bs-border-color) !important;
+  border-radius: var(--bs-border-radius-lg) !important;
+  box-shadow: var(--bs-box-shadow-sm);
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card:hover {
+  border-color: #EFB8AD !important;
+  box-shadow: 0 4px 20px rgba(239, 184, 173, 0.25) !important;
+  transform: translateY(-2px);
+}
+.card-header {
+  background: #F7F0EE !important;
+  border-bottom: 1px solid #EAE0DC !important;
+  font-weight: 600;
+  color: #3A2E2B;
+  border-radius: var(--bs-border-radius-lg) var(--bs-border-radius-lg) 0 0 !important;
+}
+.card-footer {
+  background: #FAF8F6 !important;
+  border-top: 1px solid #EAE0DC !important;
+}
+
+/* ── 5. Tables ────────────────────────────────────────────────────────── */
+.table { --bs-table-color: #3A2E2B; }
+.table thead th {
+  background: #F9F0EE;
+  color: #9A8480;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid #EAE0DC !important;
+}
+.table > :not(caption) > * > * { border-bottom-color: #F2EDEB; }
+.table-hover tbody tr:hover { background-color: #F9F0EE !important; --bs-table-bg-state: #F9F0EE; }
+.table-striped tbody tr:nth-of-type(odd) { background-color: #FAF8F6; }
+
+/* ── 6. Forms ─────────────────────────────────────────────────────────── */
+.form-control, .form-select {
+  border-color: #EAE0DC;
+  border-radius: var(--bs-border-radius-sm) !important;
+  background-color: #FAF8F6;
+  color: #3A2E2B;
+  font-size: 0.875rem;
+  transition: border-color 0.13s, box-shadow 0.13s;
+}
+.form-control:focus, .form-select:focus {
+  border-color: #EFB8AD;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(239, 184, 173, 0.28);
+}
+.form-control::placeholder { color: #C8B8B4; }
+.form-label { font-size: 0.8125rem; font-weight: 500; color: #9A8480; margin-bottom: 6px; }
+.form-text  { color: #C8B8B4; font-size: 0.75rem; }
+
+/* ── 7. Badges & Pills ─────────────────────────────────────────────────── */
+.badge {
+  font-weight: 600;
+  border-radius: 9999px !important;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+}
+.badge.bg-primary   { background: #FAE8E5 !important; color: #D9A098 !important; }
+.badge.bg-secondary { background: #E0EFF5 !important; color: #4A7E94 !important; }
+.badge.bg-success   { background: #EAF7F1 !important; color: #3D9E6E !important; }
+.badge.bg-warning   { background: #FBF3E3 !important; color: #A07020 !important; }
+.badge.bg-danger    { background: #FAE8E8 !important; color: #C05050 !important; }
+.badge.bg-info      { background: #E0EFF5 !important; color: #4A7E94 !important; }
+.badge.bg-light     { background: #F7F3F1 !important; color: #9A8480 !important; border: 1px solid #EAE0DC; }
+
+/* ── 8. Alerts ──────────────────────────────────────────────────────────── */
+.alert { border-radius: var(--bs-border-radius-sm) !important; font-size: 0.875rem; border-width: 1px; }
+.alert-primary { background: #FAE8E5; color: #B07068; border-color: rgba(239,184,173,0.4); }
+.alert-secondary{ background: #E0EFF5; color: #4A7E94; border-color: rgba(168,204,219,0.4); }
+.alert-success  { background: #EAF7F1; color: #2F7A54; border-color: rgba(109,191,154,0.35); }
+.alert-warning  { background: #FBF3E3; color: #8A6020; border-color: rgba(212,164,74,0.3); }
+.alert-danger   { background: #FAE8E8; color: #A04040; border-color: rgba(217,110,110,0.3); }
+.alert-info     { background: #E0EFF5; color: #4A7E94; border-color: rgba(168,204,219,0.4); }
+
+/* ── 9. Modal ────────────────────────────────────────────────────────────── */
+.modal-content {
+  border-radius: var(--bs-border-radius-xxl) !important;
+  border: 1px solid #EAE0DC;
+  box-shadow: 0 8px 40px rgba(58, 46, 43, 0.12);
+}
+.modal-header {
+  border-bottom: 1px solid #F2EDEB;
+  padding: 1.25rem 1.5rem;
+}
+.modal-title { font-weight: 700; font-size: 1.05rem; }
+.modal-footer { border-top: 1px solid #F2EDEB; padding: 1rem 1.5rem; }
+.modal-backdrop { background: rgba(58,46,43,0.3) !important; }
+.modal-backdrop.show { opacity: 1 !important; }
+.btn-close { filter: none; opacity: 0.5; }
+.btn-close:hover { opacity: 1; }
+
+/* ── 10. Dropdowns ──────────────────────────────────────────────────────── */
+.dropdown-menu {
+  border: 1px solid #EAE0DC;
+  border-radius: var(--bs-border-radius-lg) !important;
+  box-shadow: var(--bs-box-shadow);
+  padding: 8px;
+}
+.dropdown-item {
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #3A2E2B;
+  padding: 8px 12px;
+  transition: background 0.12s;
+}
+.dropdown-item:hover { background: #F9F0EE; color: #D9A098; }
+.dropdown-item.active { background: #FAE8E5; color: #D9A098; }
+
+/* ── 11. Progress bars ───────────────────────────────────────────────────── */
+.progress { background-color: #EAE0DC; border-radius: 9999px; }
+.progress-bar { background-color: #EFB8AD; border-radius: 9999px; }
+.progress-bar.bg-success { background-color: #6DBF9A !important; }
+.progress-bar.bg-warning { background-color: #D4A44A !important; }
+.progress-bar.bg-danger  { background-color: #D96E6E !important; }
+
+/* ── 12. List groups ─────────────────────────────────────────────────────── */
+.list-group-item {
+  border-color: #EAE0DC;
+  color: #3A2E2B;
+  font-size: 0.875rem;
+  transition: background 0.12s;
+}
+.list-group-item-action:hover { background: #F9F0EE; color: #D9A098; }
+.list-group-item.active { background: #FAE8E5 !important; border-color: #EFB8AD !important; color: #D9A098 !important; font-weight: 600; }
+
+/* ── 13. Tabs / Nav-pills ───────────────────────────────────────────────── */
+.nav-pills .nav-link { color: #9A8480; border-radius: 8px; font-size: 0.875rem; font-weight: 500; }
+.nav-pills .nav-link.active { background: #FAE8E5 !important; color: #D9A098 !important; font-weight: 600; }
+.nav-tabs { border-bottom: 1px solid #EAE0DC; }
+.nav-tabs .nav-link { color: #9A8480; border-radius: 0; font-size: 0.875rem; font-weight: 500; border-bottom: 2px solid transparent; border-top: none; border-left: none; border-right: none; }
+.nav-tabs .nav-link.active { color: #D9A098; border-bottom-color: #EFB8AD; background: none; font-weight: 600; }
+.nav-tabs .nav-link:hover { color: #3A2E2B; background: none; }
+
+/* ── 14. Accordion ──────────────────────────────────────────────────────── */
+.accordion-item { border-color: #EAE0DC; border-radius: var(--bs-border-radius-md) !important; overflow: hidden; margin-bottom: 8px; }
+.accordion-button { background: #FAF8F6; color: #3A2E2B; font-weight: 600; font-size: 0.875rem; }
+.accordion-button:not(.collapsed) { background: #FAE8E5; color: #D9A098; box-shadow: none; }
+.accordion-button::after { filter: none; }
+
+/* ── 15. Pagination ──────────────────────────────────────────────────────── */
+.page-link { color: #D9A098; border-color: #EAE0DC; font-size: 0.875rem; }
+.page-link:hover { background: #FAE8E5; color: #D9A098; border-color: #EFB8AD; }
+.page-item.active .page-link { background: #EFB8AD; border-color: #EFB8AD; color: #fff; }
+
+/* ── 16. Spinners ─────────────────────────────────────────────────────────── */
+.spinner-border { color: #EFB8AD; }
+.spinner-border.text-primary { color: #EFB8AD !important; }
+
+/* ── 17. Toasts ──────────────────────────────────────────────────────────── */
+.toast { border-radius: var(--bs-border-radius-lg) !important; border-color: #EAE0DC; }
+.toast-header { background: #F9F0EE; color: #3A2E2B; font-weight: 600; }
+
+/* ── 18. Misc tweaks ──────────────────────────────────────────────────────── */
+
+/* Input groups */
+.input-group-text {
+  background: #F7F0EE;
+  border-color: #EAE0DC;
+  color: #9A8480;
+  font-size: 0.875rem;
+}
+
+/* Placeholders / skeleton */
+.placeholder { background-color: #EAE0DC !important; border-radius: 6px; }
+
+/* Offcanvas */
+.offcanvas { border-color: #EAE0DC; }
+
+/* Tooltips */
+.tooltip-inner { background: #3A2E2B; border-radius: 8px; font-size: 0.75rem; }
+
+/* Scrollbar styling (webkit) */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #FAF8F6; }
+::-webkit-scrollbar-thumb { background: #EAE0DC; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #EFB8AD; }
+
+/* Selection color */
+::selection { background: rgba(239, 184, 173, 0.3); color: #3A2E2B; }
