@@ -89,9 +89,23 @@ prisma.$queryRaw`SELECT version()`
     console.log('\nLa cadena sirve. Cargala en Render como DATABASE_URL.\n');
   })
   .catch(function (e) {
+    var msg = String(e.message).split(String.fromCharCode(10)).filter(Boolean).slice(-1)[0];
+    var inalcanzable = /Can't reach|make sure your database server is running/i.test(e.message);
     console.error('  NO SE PUDO CONECTAR');
-    console.error('  ' + String(e.message).split('\n').filter(Boolean).slice(-1)[0]);
-    console.error('');
+    console.error('  ' + msg);
+    if (inalcanzable) {
+      console.error('');
+      console.error('  El servidor no respondio en el puerto 5432. Suele ser una de dos:');
+      console.error('');
+      console.error('   a) Tu red bloquea el puerto 5432 (comun en redes de trabajo,');
+      console.error('      universidades y algunos ISP). Comprobalo asi: si el puerto 443');
+      console.error('      del mismo servidor SI abre, el problema es el bloqueo, no tu cadena.');
+      console.error('      En ese caso la cadena igual sirve: quien se conecta en produccion');
+      console.error('      es el servidor del hosting, no tu computadora.');
+      console.error('');
+      console.error('   b) La cadena apunta a un servidor equivocado. Revisa el host.');
+      console.error('');
+    }
     process.exit(1);
   })
   .finally(function () { prisma.$disconnect(); });

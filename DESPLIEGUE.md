@@ -90,6 +90,11 @@ Para no descubrir un error recien cuando Render falle el build:
 Te avisa si quedó la conexión *pooled*, si falta `sslmode`, y prueba la
 conexión de verdad. Cuando diga **CONECTADO**, está lista para Render.
 
+> **Si dice que no puede conectar al puerto 5432:** puede ser tu red, no la cadena.
+> Muchas redes universitarias, de trabajo y algunos ISP bloquean ese puerto.
+> No es un impedimento para desplegar: quien se conecta a la base en producción
+> es el servidor de Render, no tu computadora. Seguí al paso 3 igual.
+
 > Ese archivo está en `.gitignore` y es aparte de `backend/.env` a propósito:
 > si pusieras la cadena de Neon en `.env`, tu app local pasaría a escribir sobre
 > la base real de la clienta sin que lo notes.
