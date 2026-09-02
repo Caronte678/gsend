@@ -16,7 +16,8 @@
     "seed": "node prisma/seed.js",
     "seed:demo": "node prisma/seed-demo.js",
     "test": "jest",
-    "admin:password": "node prisma/cambiar-password.js"
+    "admin:password": "node prisma/cambiar-password.js",
+    "verificar": "node prisma/verificar-conexion.js"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
