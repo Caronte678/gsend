@@ -127,7 +127,7 @@ export default function DetallePedido() {
                 )}
                 <div className="d-flex justify-content-between align-items-center">
                   <span className="text-muted small">Fecha</span>
-                  <span>{new Date(pedido.fecha_creacion).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+                  <span>{new Date(pedido.fecha_creacion).toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
                 </div>
                 {pedido.notas && (
                   <div className="pt-2 mt-1" style={{ borderTop: '1px solid var(--clr-border-soft)' }}>
@@ -218,7 +218,7 @@ export default function DetallePedido() {
                     <tbody>
                       {pedido.pagos.map(pg => (
                         <tr key={pg.id_pago}>
-                          <td className="text-muted small">{new Date(pg.fecha).toLocaleDateString('es-AR')}</td>
+                          <td className="text-muted small">{new Date(pg.fecha).toLocaleDateString('es-CL')}</td>
                           <td className="fw-bold">{money(pg.monto)}</td>
                           <td className="text-muted small">{pg.metodo_pago ?? '--'}</td>
                         </tr>

@@ -183,7 +183,7 @@ export default function Pedidos() {
                               )}
                             </div>
                           </td>
-                          <td className="text-muted small">{new Date(p.fecha_creacion).toLocaleDateString('es-AR')}</td>
+                          <td className="text-muted small">{new Date(p.fecha_creacion).toLocaleDateString('es-CL')}</td>
                           <td>
                             <div className="d-flex gap-2">
                               <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(`/pedidos/${p.id_pedido}`)}>Ver</button>

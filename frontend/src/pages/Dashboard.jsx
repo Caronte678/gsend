@@ -23,7 +23,7 @@ function PedidoRow({ p }) {
       <td><span className={`gs-badge gs-badge-${p.estado}`}>{estadoPedidoLabel(p.estado)}</span></td>
       <td className="fw-bold">{money(fin.total_venta ?? 0)}</td>
       <td><span className={`gs-badge gs-badge-${fin.estado_pago ?? 'sin_pago'}`}>{estadoPagoLabel(fin.estado_pago ?? 'sin_pago')}</span></td>
-      <td className="text-muted small">{new Date(p.fecha_creacion).toLocaleDateString('es-AR')}</td>
+      <td className="text-muted small">{new Date(p.fecha_creacion).toLocaleDateString('es-CL')}</td>
     </tr>
   );
 }
@@ -64,7 +64,7 @@ export default function Dashboard() {
       <div className="page-header">
         <h1 className="page-header-title">Dashboard</h1>
         <div className="text-muted small">
-          {new Date().toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          {new Date().toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </div>
       </div>
 
