@@ -3,8 +3,13 @@
  * No imprime la contraseña.
  *
  * Uso:
- *   DATABASE_URL="postgresql://..." npm run verificar
+ *   1. Poner DATABASE_URL en backend/.env (que no se versiona)
+ *   2. npm run verificar
  */
+
+// Lee backend/.env, que esta en .gitignore. Asi la cadena nunca hace falta
+// escribirla en la terminal ni queda en el historial de comandos.
+require('dotenv').config();
 
 const url = process.env.DATABASE_URL;
 
