@@ -125,25 +125,38 @@ Cuando termine te da una URL del estilo `https://gsend.onrender.com`.
 
 ## 4. Crear el usuario administrador
 
-La base arranca vacía. En Render, abrí la pestaña **Shell** de tu servicio y
-ejecutá (poniendo el email y la contraseña que quieras usar):
+La base arranca vacía, así que hay que crear la cuenta con la que va a entrar.
 
-```bash
-ADMIN_EMAIL=tuemail@ejemplo.com ADMIN_PASSWORD=una-contraseña-larga npm run seed
+> **La consola (Shell) de Render es solo para planes pagos**, así que no se puede
+> correr `npm run seed` desde allá. En su lugar se genera la sentencia SQL en tu
+> computadora y se ejecuta desde el editor de Neon, que funciona por el navegador
+> y no depende del puerto 5432.
+
+**1. Generá la sentencia** (en PowerShell, dentro de `backend`):
+
+```powershell
+$env:ADMIN_EMAIL="elemail@dela.clienta"
+$env:ADMIN_PASSWORD="una-contrasena-larga"
+npm run sql:admin
 ```
 
-La contraseña no se guarda en ningún archivo: solo queda su hash en la base.
+Imprime un `INSERT` listo para copiar. Contiene el *hash* de la contraseña, no la
+contraseña: es seguro pegarlo donde sea.
 
-Si querés cambiarla después:
+**2. Ejecutalo en Neon:** panel del proyecto → **SQL Editor** → pegar → **Run**.
 
-```bash
-ADMIN_EMAIL=tuemail@ejemplo.com ADMIN_PASSWORD=la-nueva npm run admin:password
+**3. Probá el ingreso** en la URL de la app con ese email y esa contraseña.
+
+Para cambiar la contraseña más adelante, generás la sentencia otra vez y en lugar
+de insertarla usás:
+
+```sql
+UPDATE usuarios SET password_hash = 'el-hash-nuevo' WHERE email = 'el-email';
 ```
 
-> **No uses la contraseña de desarrollo.** Elegí una larga (mínimo 10 caracteres,
-> mejor 16) y guardala en un gestor de contraseñas.
-
----
+> **No corras `seed:demo`.** Carga productos y pedidos inventados que después
+> habría que borrar uno por uno. La base vacía es justo lo que querés para que
+> ella cargue lo suyo.
 
 ## 5. Probar
 
