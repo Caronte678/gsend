@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import ConfirmModal from '../components/ConfirmModal';
 import { useToast } from '../context/ToastContext';
-import { money } from '../utils/labels';
+import { money, recetaLabel } from '../utils/labels';
 import api from '../services/api';
 
 const OVERLAY = { position: 'fixed', inset: 0, background: 'rgba(58,46,43,0.3)', zIndex: 0 };
@@ -92,11 +92,10 @@ function ProductoModal({ producto, onClose, onSaved }) {
 // ─── Modal receta ─────────────────────────────────────────────────────────────
 function RecetaModal({ producto, onClose }) {
   const [receta, setReceta]         = useState(producto.receta ?? []);
-  const [atributos, setAtributos]   = useState(producto.atributos ?? []);
   const [materiales, setMateriales] = useState([]);
-  const [tab, setTab]               = useState('receta');
-  const [form, setForm]             = useState({ id_material: '', cantidad_por_unidad: '' });
-  const [formAtrib, setFormAtrib]   = useState({ nombre: '', tipo_dato: 'numero' });
+  // modo 'usa':   cuánto material gasta cada unidad (2 ml de tinta por foto)
+  // modo 'rinde': cuántas unidades salen de 1 material (1 hoja A4 rinde 3 fotos)
+  const [form, setForm]             = useState({ id_material: '', modo: 'usa', valor: '' });
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState(null);
 
@@ -105,17 +104,31 @@ function RecetaModal({ producto, onClose }) {
   }, []);
 
   async function addReceta(e) {
-    e.preventDefault(); setError(null); setLoading(true);
+    e.preventDefault(); setError(null);
+
+    const valor = parseFloat(form.valor);
+    if (!Number.isFinite(valor) || valor <= 0) {
+      setError('Ingresá una cantidad mayor a 0.');
+      return;
+    }
+    // La base guarda 6 decimales: 1/3 -> 0.333333
+    const cantidad_por_unidad = Math.round((form.modo === 'rinde' ? 1 / valor : valor) * 1e6) / 1e6;
+    if (cantidad_por_unidad <= 0) {
+      setError('El rendimiento es demasiado alto.');
+      return;
+    }
+
+    setLoading(true);
     try {
       const r = await api.post(`/productos/${producto.id_producto}/materiales`, {
         id_material: parseInt(form.id_material),
-        cantidad_por_unidad: parseFloat(form.cantidad_por_unidad),
+        cantidad_por_unidad,
       });
       setReceta(prev => {
         const idx = prev.findIndex(x => x.id_material === r.data.id_material);
         return idx >= 0 ? prev.map((x, i) => i === idx ? r.data : x) : [...prev, r.data];
       });
-      setForm({ id_material: '', cantidad_por_unidad: '' });
+      setForm(f => ({ id_material: '', modo: f.modo, valor: '' }));
     } catch (err) { setError(err.response?.data?.error ?? 'Error'); }
     finally { setLoading(false); }
   }
@@ -124,23 +137,6 @@ function RecetaModal({ producto, onClose }) {
     try {
       await api.delete(`/productos/${producto.id_producto}/materiales/${id_material}`);
       setReceta(prev => prev.filter(x => x.id_material !== id_material));
-    } catch (err) { setError(err.response?.data?.error ?? 'Error'); }
-  }
-
-  async function addAtributo(e) {
-    e.preventDefault(); setError(null); setLoading(true);
-    try {
-      const r = await api.post(`/productos/${producto.id_producto}/atributos`, formAtrib);
-      setAtributos(prev => [...prev, r.data]);
-      setFormAtrib({ nombre: '', tipo_dato: 'numero' });
-    } catch (err) { setError(err.response?.data?.error ?? 'Error'); }
-    finally { setLoading(false); }
-  }
-
-  async function removeAtributo(id_atributo) {
-    try {
-      await api.delete(`/productos/${producto.id_producto}/atributos/${id_atributo}`);
-      setAtributos(prev => prev.filter(x => x.id_atributo !== id_atributo));
     } catch (err) { setError(err.response?.data?.error ?? 'Error'); }
   }
 
@@ -155,112 +151,64 @@ function RecetaModal({ producto, onClose }) {
           </div>
           <div className="modal-body">
             {error && <div className="alert alert-danger py-2 mb-3">&#9888; {error}</div>}
-            <ul className="nav nav-tabs mb-4">
-              <li className="nav-item">
-                <button className={`nav-link${tab === 'receta' ? ' active' : ''}`} onClick={() => setTab('receta')}>
-                  Materiales fijos
-                </button>
-              </li>
-              <li className="nav-item">
-                <button className={`nav-link${tab === 'atributos' ? ' active' : ''}`} onClick={() => setTab('atributos')}>
-                  Atributos variables
-                </button>
-              </li>
-            </ul>
-
-            {tab === 'receta' && (
-              <>
-                <form onSubmit={addReceta} className="row g-2 align-items-end mb-4">
-                  <div className="col-6">
-                    <label className="form-label">Material</label>
-                    <select className="form-select form-select-sm" value={form.id_material}
-                      onChange={e => setForm(f => ({ ...f, id_material: e.target.value }))} required>
-                      <option value="">-- Seleccionar --</option>
-                      {materiales.filter(m => m.activo).map(m => (
-                        <option key={m.id_material} value={m.id_material}>{m.nombre} ({m.unidad_medida})</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-4">
-                    <label className="form-label">Cantidad / unidad</label>
-                    <input className="form-control form-control-sm" type="number" min="0.0001" step="0.0001"
-                      placeholder="0.0" value={form.cantidad_por_unidad}
-                      onChange={e => setForm(f => ({ ...f, cantidad_por_unidad: e.target.value }))} required />
-                  </div>
-                  <div className="col-2">
-                    <button type="submit" className="btn btn-primary btn-sm w-100" disabled={loading}>Agregar</button>
-                  </div>
-                </form>
-                <div className="table-wrapper">
-                  <table className="table table-hover mb-0">
-                    <thead><tr><th>Material</th><th>Unidad</th><th>Cantidad/unidad</th><th></th></tr></thead>
-                    <tbody>
-                      {receta.length === 0
-                        ? <tr><td colSpan={4} className="table-empty">Sin materiales en la receta</td></tr>
-                        : receta.map(r => (
-                          <tr key={r.id_material}>
-                            <td className="fw-bold">{r.material?.nombre ?? r.id_material}</td>
-                            <td className="text-muted">{r.material?.unidad_medida}</td>
-                            <td>{Number(r.cantidad_por_unidad).toFixed(4)}</td>
-                            <td>
-                              <button className="btn btn-danger btn-sm" onClick={() => removeReceta(r.id_material)}>
-                                Quitar
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
-
-            {tab === 'atributos' && (
-              <>
-                <form onSubmit={addAtributo} className="row g-2 align-items-end mb-4">
-                  <div className="col-6">
-                    <label className="form-label">Nombre del atributo</label>
-                    <input className="form-control form-control-sm" placeholder="Ej: ancho_cm, color, tamano"
-                      value={formAtrib.nombre}
-                      onChange={e => setFormAtrib(f => ({ ...f, nombre: e.target.value }))} required />
-                  </div>
-                  <div className="col-4">
-                    <label className="form-label">Tipo</label>
-                    <select className="form-select form-select-sm" value={formAtrib.tipo_dato}
-                      onChange={e => setFormAtrib(f => ({ ...f, tipo_dato: e.target.value }))}>
-                      <option value="numero">Numero</option>
-                      <option value="texto">Texto</option>
-                      <option value="seleccion">Seleccion</option>
-                    </select>
-                  </div>
-                  <div className="col-2">
-                    <button type="submit" className="btn btn-primary btn-sm w-100" disabled={loading}>Agregar</button>
-                  </div>
-                </form>
-                <div className="table-wrapper">
-                  <table className="table table-hover mb-0">
-                    <thead><tr><th>Atributo</th><th>Tipo</th><th></th></tr></thead>
-                    <tbody>
-                      {atributos.length === 0
-                        ? <tr><td colSpan={3} className="table-empty">Sin atributos variables</td></tr>
-                        : atributos.map(a => (
-                          <tr key={a.id_atributo}>
-                            <td className="fw-bold">{a.nombre}</td>
-                            <td><span className="badge bg-secondary">{a.tipo_dato}</span></td>
-                            <td>
-                              <button className="btn btn-danger btn-sm" onClick={() => removeAtributo(a.id_atributo)}>
-                                Quitar
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
+            <form onSubmit={addReceta} className="row g-2 align-items-end mb-2">
+              <div className="col-12 col-md-4">
+                <label className="form-label">Material</label>
+                <select className="form-select form-select-sm" value={form.id_material}
+                  onChange={e => setForm(f => ({ ...f, id_material: e.target.value }))} required>
+                  <option value="">-- Seleccionar --</option>
+                  {materiales.filter(m => m.activo).map(m => (
+                    <option key={m.id_material} value={m.id_material}>{m.nombre} ({m.unidad_medida})</option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-6 col-md-3">
+                <label className="form-label">Cómo se mide</label>
+                <select className="form-select form-select-sm" value={form.modo}
+                  onChange={e => setForm(f => ({ ...f, modo: e.target.value }))}>
+                  <option value="usa">Usa por unidad</option>
+                  <option value="rinde">1 material rinde</option>
+                </select>
+              </div>
+              <div className="col-6 col-md-3">
+                <label className="form-label">{form.modo === 'rinde' ? 'Unidades que salen' : 'Cantidad por unidad'}</label>
+                <input className="form-control form-control-sm" type="number" min="0.0001"
+                  step={form.modo === 'rinde' ? '1' : 'any'}
+                  placeholder={form.modo === 'rinde' ? 'Ej: 3' : 'Ej: 2'} value={form.valor}
+                  onChange={e => setForm(f => ({ ...f, valor: e.target.value }))} required />
+              </div>
+              <div className="col-12 col-md-2">
+                <button type="submit" className="btn btn-primary btn-sm w-100" disabled={loading}>Agregar</button>
+              </div>
+            </form>
+            <p className="text-muted mb-4" style={{ fontSize: 11 }}>
+              {form.modo === 'rinde'
+                ? 'Ej: de 1 hoja A4 salen 3 fotos de 10x15 → escribí 3.'
+                : 'Ej: cada foto usa 2 ml de tinta → escribí 2.'}
+              {' '}Si el material ya está en la receta, se reemplaza su cantidad.
+            </p>
+            <div className="table-wrapper">
+              <table className="table table-hover mb-0">
+                <thead><tr><th>Material</th><th>Unidad</th><th>Consumo</th><th></th></tr></thead>
+                <tbody>
+                  {receta.length === 0
+                    ? <tr><td colSpan={4} className="table-empty">Sin materiales en la receta</td></tr>
+                    : receta.map(r => (
+                      <tr key={r.id_material}>
+                        <td className="fw-bold">{r.material?.nombre ?? r.id_material}</td>
+                        <td className="text-muted">{r.material?.unidad_medida}</td>
+                        <td>{recetaLabel(r.cantidad_por_unidad, r.material?.unidad_medida)}</td>
+                        <td>
+                          <button className="btn btn-danger btn-sm" onClick={() => removeReceta(r.id_material)}>
+                            Quitar
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
           <div className="modal-footer">
             <button className="btn btn-outline-secondary btn-sm" onClick={onClose}>Cerrar</button>
@@ -355,19 +303,18 @@ export default function Productos() {
                 <thead>
                   <tr>
                     <th>Nombre</th><th>Tipo</th><th>Precio</th>
-                    <th>Materiales</th><th>Atributos</th><th>Estado</th><th></th>
+                    <th>Materiales</th><th>Estado</th><th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtrados.length === 0
-                    ? <tr><td colSpan={7} className="table-empty">Sin productos registrados</td></tr>
+                    ? <tr><td colSpan={6} className="table-empty">Sin productos registrados</td></tr>
                     : filtrados.map(p => (
                       <tr key={p.id_producto}>
                         <td className="fw-bold">{p.nombre}</td>
                         <td><span className="badge bg-secondary">{p.tipo}</span></td>
                         <td>{p.precio_base != null ? money(p.precio_base) : <span className="text-muted">--</span>}</td>
                         <td className="text-muted small">{p.receta?.length ?? 0} materiales</td>
-                        <td className="text-muted small">{p.atributos?.length ?? 0} atributos</td>
                         <td>
                           <span className={`gs-badge gs-badge-${p.activo ? 'ok' : 'cancelado'}`}>
                             {p.activo ? 'Activo' : 'Inactivo'}

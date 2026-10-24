@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import ReponerModal from '../components/ReponerModal';
-import { moneyUnit } from '../utils/labels';
+import { moneyUnit, qty } from '../utils/labels';
 import api from '../services/api';
 
 export default function Inventario() {
@@ -101,8 +101,8 @@ export default function Inventario() {
                         </div>
                         <div className="stock-bar-wrapper">
                           <div className="d-flex justify-content-between text-muted mb-1" style={{ fontSize: 12 }}>
-                            <span>Actual: <strong>{Math.round(Number(m.stock_actual))}</strong></span>
-                            <span>Minimo: {Math.round(Number(m.stock_minimo))}</span>
+                            <span>Actual: <strong>{qty(m.stock_actual)}</strong></span>
+                            <span>Minimo: {qty(m.stock_minimo)}</span>
                           </div>
                           <div className="stock-bar-track">
                             <div className={`stock-bar-fill ${getBarClass(m)}`} style={{ width: `${pct}%` }} />
@@ -126,8 +126,8 @@ export default function Inventario() {
                           <div>
                             <div className="fw-bold" style={{ color: 'var(--clr-danger)' }}>{m.nombre}</div>
                             <div className="text-muted mt-1" style={{ fontSize: 12 }}>
-                              Stock actual: <strong>{Math.round(Number(m.stock_actual))} {m.unidad_medida}</strong>
-                              {' '}/ Minimo: {Math.round(Number(m.stock_minimo))}
+                              Stock actual: <strong>{qty(m.stock_actual)} {m.unidad_medida}</strong>
+                              {' '}/ Minimo: {qty(m.stock_minimo)}
                             </div>
                           </div>
                           <button className="btn btn-primary btn-sm" onClick={() => setReponerModal(m)}>

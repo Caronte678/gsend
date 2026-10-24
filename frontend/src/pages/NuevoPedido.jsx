@@ -7,7 +7,6 @@ import { money } from '../utils/labels';
 // ─── Item de pedido ───────────────────────────────────────────────────────────
 function ItemRow({ item, productos, onUpdate, onRemove }) {
   const producto = productos.find(p => p.id_producto === item.id_producto);
-  const atributos = producto?.atributos ?? [];
   const precioBase = producto?.precio_base;
 
   function handleProductoChange(e) {
@@ -23,7 +22,7 @@ function ItemRow({ item, productos, onUpdate, onRemove }) {
       precioEsSugerido && nuevoProd?.precio_base != null
         ? String(nuevoProd.precio_base)
         : precioActual;
-    onUpdate({ ...item, id_producto: nuevoId, valores: [], precio_venta_unitario: nuevoPrecio });
+    onUpdate({ ...item, id_producto: nuevoId, precio_venta_unitario: nuevoPrecio });
   }
 
   return (
@@ -71,33 +70,6 @@ function ItemRow({ item, productos, onUpdate, onRemove }) {
         </div>
       </div>
 
-      {/* Atributos variables */}
-      {atributos.length > 0 && (
-        <div className="row g-2 mt-1 ps-1" style={{ borderTop: '1px solid var(--clr-border-soft)', paddingTop: 12 }}>
-          {atributos.map(a => {
-            const valorObj = item.valores?.find(v => v.id_atributo === a.id_atributo);
-            return (
-              <div key={a.id_atributo} className="col-sm-4">
-                <label className="form-label">
-                  {a.nombre} <span className="text-muted" style={{ fontSize: 10 }}>({a.tipo_dato})</span>
-                </label>
-                <input
-                  className="form-control form-control-sm"
-                  type={a.tipo_dato === 'numero' ? 'number' : 'text'}
-                  step={a.tipo_dato === 'numero' ? '0.01' : undefined}
-                  value={valorObj?.valor ?? ''}
-                  onChange={e => {
-                    const nuevos = (item.valores ?? []).filter(v => v.id_atributo !== a.id_atributo);
-                    if (e.target.value !== '') nuevos.push({ id_atributo: a.id_atributo, valor: e.target.value });
-                    onUpdate({ ...item, valores: nuevos });
-                  }}
-                  placeholder={a.tipo_dato === 'numero' ? '0' : 'valor…'}
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }
@@ -117,7 +89,7 @@ export default function NuevoPedido() {
   }, []);
 
   function addItem() {
-    setItems(prev => [...prev, { _id: _nextId++, id_producto: '', cantidad: 1, precio_venta_unitario: '', valores: [] }]);
+    setItems(prev => [...prev, { _id: _nextId++, id_producto: '', cantidad: 1, precio_venta_unitario: '' }]);
   }
 
   function updateItem(idx, updated) { setItems(prev => prev.map((it, i) => i === idx ? updated : it)); }
@@ -143,7 +115,6 @@ export default function NuevoPedido() {
           id_producto: it.id_producto,
           cantidad: it.cantidad,
           precio_venta_unitario: parseFloat(it.precio_venta_unitario),
-          valores: it.valores?.filter(v => v.valor !== '') ?? [],
         })),
       };
       await api.post('/pedidos', body);

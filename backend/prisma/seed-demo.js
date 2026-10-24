@@ -4,7 +4,7 @@
  *
  * Incluye:
  *  - Materiales con stock real (algunos bajo mínimo para ver alertas)
- *  - Productos con receta de materiales y atributos variables
+ *  - Productos con receta de materiales
  *  - Pedidos en distintos estados con pagos parciales/completos
  *
  * Uso:
@@ -169,13 +169,6 @@ async function main() {
     create: { id_producto: cuadro.id_producto, id_material: bolsa.id_material, cantidad_por_unidad: 1 },
   });
 
-  // Atributo: dedicatoria
-  await prisma.atributoVariable.upsert({
-    where: { id_producto_nombre: { id_producto: cuadro.id_producto, nombre: 'dedicatoria' } },
-    update: {},
-    create: { id_producto: cuadro.id_producto, nombre: 'dedicatoria', tipo_dato: 'texto' },
-  });
-
   // Sticker personalizado
   const sticker = await prisma.producto.upsert({
     where: { id_producto: 2 },
@@ -192,17 +185,6 @@ async function main() {
     where: { id_producto_id_material: { id_producto: sticker.id_producto, id_material: vinilo.id_material } },
     update: {},
     create: { id_producto: sticker.id_producto, id_material: vinilo.id_material, cantidad_por_unidad: 0.05 },
-  });
-
-  await prisma.atributoVariable.upsert({
-    where: { id_producto_nombre: { id_producto: sticker.id_producto, nombre: 'ancho_cm' } },
-    update: {},
-    create: { id_producto: sticker.id_producto, nombre: 'ancho_cm', tipo_dato: 'numero' },
-  });
-  await prisma.atributoVariable.upsert({
-    where: { id_producto_nombre: { id_producto: sticker.id_producto, nombre: 'alto_cm' } },
-    update: {},
-    create: { id_producto: sticker.id_producto, nombre: 'alto_cm', tipo_dato: 'numero' },
   });
 
   // Libreta personalizada
@@ -231,12 +213,6 @@ async function main() {
     where: { id_producto_id_material: { id_producto: libreta.id_producto, id_material: espiral.id_material } },
     update: {},
     create: { id_producto: libreta.id_producto, id_material: espiral.id_material, cantidad_por_unidad: 1 },
-  });
-
-  await prisma.atributoVariable.upsert({
-    where: { id_producto_nombre: { id_producto: libreta.id_producto, nombre: 'cantidad_hojas' } },
-    update: {},
-    create: { id_producto: libreta.id_producto, nombre: 'cantidad_hojas', tipo_dato: 'numero' },
   });
 
   // Llavero foto
@@ -285,21 +261,8 @@ async function main() {
     create: { id_producto: combo.id_producto, id_material: washi.id_material, cantidad_por_unidad: 0.3 },
   });
 
-  await prisma.atributoVariable.upsert({
-    where: { id_producto_nombre: { id_producto: combo.id_producto, nombre: 'mensaje_tarjeta' } },
-    update: {},
-    create: { id_producto: combo.id_producto, nombre: 'mensaje_tarjeta', tipo_dato: 'texto' },
-  });
-
   // ── 3. PEDIDOS ────────────────────────────────────────────────────────────
   console.log('📦 Creando pedidos de prueba...');
-
-  const getAtrib = async (id_producto, nombre) => {
-    const a = await prisma.atributoVariable.findUnique({
-      where: { id_producto_nombre: { id_producto, nombre } },
-    });
-    return a?.id_atributo;
-  };
 
   // Pedido 1 — Completado, pagado
   const p1 = await prisma.pedido.create({
@@ -315,12 +278,6 @@ async function main() {
             id_producto: cuadro.id_producto,
             cantidad: 1,
             precio_venta_unitario: 3200,
-            valores: {
-              create: [{
-                id_atributo: await getAtrib(cuadro.id_producto, 'dedicatoria'),
-                valor: 'Para mi amor eterno ♥',
-              }],
-            },
           },
           {
             id_producto: llavero.id_producto,
@@ -349,23 +306,11 @@ async function main() {
             id_producto: combo.id_producto,
             cantidad: 1,
             precio_venta_unitario: 3800,
-            valores: {
-              create: [{
-                id_atributo: await getAtrib(combo.id_producto, 'mensaje_tarjeta'),
-                valor: 'Feliz cumple mami, te amo infinito 🌸',
-              }],
-            },
           },
           {
             id_producto: sticker.id_producto,
             cantidad: 5,
             precio_venta_unitario: 380,
-            valores: {
-              create: [
-                { id_atributo: await getAtrib(sticker.id_producto, 'ancho_cm'), valor: '8' },
-                { id_atributo: await getAtrib(sticker.id_producto, 'alto_cm'), valor: '8' },
-              ],
-            },
           },
         ],
       },
@@ -389,17 +334,11 @@ async function main() {
             id_producto: libreta.id_producto,
             cantidad: 1,
             precio_venta_unitario: 2000,
-            valores: {
-              create: [{ id_atributo: await getAtrib(libreta.id_producto, 'cantidad_hojas'), valor: '80' }],
-            },
           },
           {
             id_producto: cuadro.id_producto,
             cantidad: 1,
             precio_venta_unitario: 3000,
-            valores: {
-              create: [{ id_atributo: await getAtrib(cuadro.id_producto, 'dedicatoria'), valor: 'Para Santi con amor' }],
-            },
           },
         ],
       },
@@ -420,12 +359,6 @@ async function main() {
             id_producto: sticker.id_producto,
             cantidad: 20,
             precio_venta_unitario: 300,
-            valores: {
-              create: [
-                { id_atributo: await getAtrib(sticker.id_producto, 'ancho_cm'), valor: '5' },
-                { id_atributo: await getAtrib(sticker.id_producto, 'alto_cm'), valor: '5' },
-              ],
-            },
           },
         ],
       },
@@ -469,7 +402,7 @@ async function main() {
 
   console.log('\n✅ Datos de prueba cargados exitosamente:\n');
   console.log('   📦 10 materiales (3 con stock bajo mínimo para ver alertas)');
-  console.log('   🏷️  5 productos con recetas y atributos variables');
+  console.log('   🏷️  5 productos con recetas');
   console.log('   📋 6 pedidos en distintos estados:');
   console.log('       - 2 completados y pagados');
   console.log('       - 1 confirmado con pago parcial');

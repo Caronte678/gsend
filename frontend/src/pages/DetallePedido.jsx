@@ -143,7 +143,7 @@ export default function DetallePedido() {
               <div className="section-title">Productos</div>
               <div className="table-wrapper">
                 <table className="table table-hover mb-0">
-                  <thead><tr><th>Producto</th><th>Cant.</th><th>P. unitario</th><th>Subtotal</th><th>Atributos</th></tr></thead>
+                  <thead><tr><th>Producto</th><th>Cant.</th><th>P. unitario</th><th>Subtotal</th></tr></thead>
                   <tbody>
                     {pedido.items.map(item => (
                       <tr key={item.id_item}>
@@ -151,11 +151,6 @@ export default function DetallePedido() {
                         <td>{item.cantidad}</td>
                         <td>{money(item.precio_venta_unitario)}</td>
                         <td className="fw-bold">{money(item.cantidad * Number(item.precio_venta_unitario))}</td>
-                        <td className="text-muted small">
-                          {item.valores?.length > 0
-                            ? item.valores.map(v => `${v.atributo?.nombre}: ${v.valor}`).join(', ')
-                            : '--'}
-                        </td>
                       </tr>
                     ))}
                   </tbody>

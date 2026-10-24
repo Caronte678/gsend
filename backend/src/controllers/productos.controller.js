@@ -16,7 +16,6 @@ async function listar(req, res, next) {
       where,
       include: {
         receta: { include: { material: true } },
-        atributos: { include: { reglas: { include: { material: true } } } },
       },
       orderBy: { nombre: 'asc' },
     });
@@ -27,7 +26,7 @@ async function listar(req, res, next) {
   }
 }
 
-// GET /api/productos/:id — incluye receta completa y atributos variables
+// GET /api/productos/:id — incluye la receta completa
 async function obtener(req, res, next) {
   try {
     const id = parseInt(req.params.id);
@@ -36,7 +35,6 @@ async function obtener(req, res, next) {
       where: { id_producto: id },
       include: {
         receta: { include: { material: true } },
-        atributos: { include: { reglas: { include: { material: true } } } },
       },
     });
 
@@ -191,97 +189,6 @@ async function eliminarReceta(req, res, next) {
   }
 }
 
-// ─── ATRIBUTOS VARIABLES ──────────────────────────────────────────────────────
-
-// GET /api/productos/:id/atributos
-async function listarAtributos(req, res, next) {
-  try {
-    const id = parseInt(req.params.id);
-
-    const atributos = await prisma.atributoVariable.findMany({
-      where: { id_producto: id },
-      include: { reglas: { include: { material: true } } },
-    });
-
-    res.json(atributos);
-  } catch (err) {
-    next(err);
-  }
-}
-
-// POST /api/productos/:id/atributos — { nombre, tipo_dato }
-// tipo_dato: 'numero' | 'texto' | 'seleccion'
-async function crearAtributo(req, res, next) {
-  try {
-    const id_producto = parseInt(req.params.id);
-    const { nombre, tipo_dato } = req.body;
-
-    const TIPOS_VALIDOS = ['numero', 'texto', 'seleccion'];
-    if (!nombre || !tipo_dato) {
-      return res.status(400).json({ error: 'nombre y tipo_dato son requeridos' });
-    }
-    if (!TIPOS_VALIDOS.includes(tipo_dato)) {
-      return res.status(400).json({ error: `tipo_dato debe ser uno de: ${TIPOS_VALIDOS.join(', ')}` });
-    }
-
-    const atributo = await prisma.atributoVariable.create({
-      data: { id_producto, nombre, tipo_dato },
-    });
-
-    res.status(201).json(atributo);
-  } catch (err) {
-    if (err.code === 'P2002') {
-      return res.status(409).json({ error: 'Ya existe un atributo con ese nombre para este producto' });
-    }
-    next(err);
-  }
-}
-
-// DELETE /api/productos/:id/atributos/:id_atributo
-async function eliminarAtributo(req, res, next) {
-  try {
-    const id_atributo = parseInt(req.params.id_atributo);
-
-    await prisma.atributoVariable.delete({
-      where: { id_atributo },
-    });
-
-    res.status(204).send();
-  } catch (err) {
-    if (err.code === 'P2025') {
-      return res.status(404).json({ error: 'Atributo no encontrado' });
-    }
-    next(err);
-  }
-}
-
-// POST /api/atributos/:id_atributo/materiales — { id_material, cantidad_por_unidad_atributo }
-// Vincula un material a un atributo variable (tabla atributo_material).
-async function upsertAtributoMaterial(req, res, next) {
-  try {
-    const id_atributo = parseInt(req.params.id_atributo);
-    const { id_material, cantidad_por_unidad_atributo } = req.body;
-
-    if (!id_material || cantidad_por_unidad_atributo === undefined || cantidad_por_unidad_atributo <= 0) {
-      return res.status(400).json({ error: 'id_material y cantidad_por_unidad_atributo (> 0) son requeridos' });
-    }
-
-    const regla = await prisma.atributoMaterial.upsert({
-      where: { id_atributo_id_material: { id_atributo, id_material } },
-      create: { id_atributo, id_material, cantidad_por_unidad_atributo },
-      update: { cantidad_por_unidad_atributo },
-      include: { material: true },
-    });
-
-    res.status(201).json(regla);
-  } catch (err) {
-    if (err.code === 'P2003') {
-      return res.status(404).json({ error: 'Atributo o material no encontrado' });
-    }
-    next(err);
-  }
-}
-
 module.exports = {
   listar,
   obtener,
@@ -291,8 +198,4 @@ module.exports = {
   listarReceta,
   upsertReceta,
   eliminarReceta,
-  listarAtributos,
-  crearAtributo,
-  eliminarAtributo,
-  upsertAtributoMaterial,
 };

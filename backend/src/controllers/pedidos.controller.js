@@ -5,31 +5,15 @@ const prisma = require('../config/prisma');
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Estima el costo de materiales de un pedido a partir de la receta actual del
-// producto (materiales fijos + reglas de atributos variables) y el costo unitario
-// actual de cada material. Se usa cuando el pedido todavía NO fue completado y por
-// lo tanto no tiene movimientos de salida registrados.
-// Requiere que `pedido.items[].producto` incluya `receta` y `atributos.reglas`,
-// y que cada material traiga `costo_unitario_actual`.
+// producto y el costo unitario actual de cada material. Se usa cuando el pedido
+// todavía NO fue completado y por lo tanto no tiene movimientos de salida registrados.
+// Requiere que `pedido.items[].producto` incluya `receta` con su material.
 function estimarCostoReceta(pedido) {
   let costo = 0;
   for (const item of pedido.items) {
-    const producto = item.producto;
-    if (!producto) continue;
-    const cantidad = item.cantidad;
-
-    for (const r of producto.receta ?? []) {
+    for (const r of item.producto?.receta ?? []) {
       const costoMat = Number(r.material?.costo_unitario_actual ?? 0);
-      costo += Number(r.cantidad_por_unidad) * cantidad * costoMat;
-    }
-
-    for (const valor of item.valores ?? []) {
-      const atributo = (producto.atributos ?? []).find((a) => a.id_atributo === valor.id_atributo);
-      if (!atributo) continue;
-      const factor = atributo.tipo_dato === 'numero' ? (parseFloat(valor.valor) || 1) : 1;
-      for (const regla of atributo.reglas ?? []) {
-        const costoMat = Number(regla.material?.costo_unitario_actual ?? 0);
-        costo += Number(regla.cantidad_por_unidad_atributo) * factor * cantidad * costoMat;
-      }
+      costo += Number(r.cantidad_por_unidad) * item.cantidad * costoMat;
     }
   }
   return costo;
@@ -79,7 +63,6 @@ function calcularFinancieros(pedido) {
 const INCLUDE_PRODUCTO_RECETA = {
   include: {
     receta: { include: { material: true } },
-    atributos: { include: { reglas: { include: { material: true } } } },
   },
 };
 
@@ -87,7 +70,6 @@ const INCLUDE_COMPLETO = {
   items: {
     include: {
       producto: INCLUDE_PRODUCTO_RECETA,
-      valores: { include: { atributo: true } },
     },
   },
   pagos: true,
@@ -106,16 +88,7 @@ async function listar(req, res, next) {
 
     const pedidos = await prisma.pedido.findMany({
       where,
-      include: {
-        items: {
-          include: {
-            producto: INCLUDE_PRODUCTO_RECETA,
-            valores: true,
-          },
-        },
-        pagos: true,
-        movimientos: true,
-      },
+      include: INCLUDE_COMPLETO,
       orderBy: { fecha_creacion: 'desc' },
     });
 
@@ -156,7 +129,7 @@ async function obtener(req, res, next) {
 // POST /api/pedidos
 // Body: {
 //   cliente_nombre, cliente_contacto?, notas?,
-//   items: [{ id_producto, cantidad, precio_venta_unitario, valores?: [{ id_atributo, valor }] }]
+//   items: [{ id_producto, cantidad, precio_venta_unitario }]
 // }
 // ─────────────────────────────────────────────────────────────────────────────
 async function crear(req, res, next) {
@@ -182,25 +155,6 @@ async function crear(req, res, next) {
       }
     }
 
-    // Cada valor de atributo debe pertenecer al producto de su propio item; si no,
-    // el pedido quedaría con datos inconsistentes (y el cálculo de consumo de
-    // materiales al completar lo ignoraría en silencio).
-    const idsProducto = [...new Set(items.map((it) => Number(it.id_producto)))];
-    const atributosValidos = await prisma.atributoVariable.findMany({
-      where: { id_producto: { in: idsProducto } },
-      select: { id_atributo: true, id_producto: true },
-    });
-    for (const [i, it] of items.entries()) {
-      for (const v of it.valores ?? []) {
-        const atr = atributosValidos.find((a) => a.id_atributo === Number(v.id_atributo));
-        if (!atr || atr.id_producto !== Number(it.id_producto)) {
-          return res.status(400).json({
-            error: `Item ${i + 1}: el atributo ${v.id_atributo} no pertenece al producto seleccionado`,
-          });
-        }
-      }
-    }
-
     const pedido = await prisma.pedido.create({
       data: {
         cliente_nombre,
@@ -211,14 +165,6 @@ async function crear(req, res, next) {
             id_producto: Number(item.id_producto),
             cantidad: Number(item.cantidad),
             precio_venta_unitario: Number(item.precio_venta_unitario),
-            valores: item.valores?.length
-              ? {
-                  create: item.valores.map((v) => ({
-                    id_atributo: Number(v.id_atributo),
-                    valor: String(v.valor),
-                  })),
-                }
-              : undefined,
           })),
         },
       },
@@ -228,7 +174,7 @@ async function crear(req, res, next) {
     res.status(201).json({ ...pedido, financiero: calcularFinancieros(pedido) });
   } catch (err) {
     if (err.code === 'P2003') {
-      return res.status(404).json({ error: 'Producto o atributo referenciado no existe' });
+      return res.status(404).json({ error: 'Producto referenciado no existe' });
     }
     next(err);
   }
@@ -282,13 +228,7 @@ async function cambiarEstado(req, res, next) {
         include: {
           items: {
             include: {
-              producto: {
-                include: {
-                  receta: true,
-                  atributos: { include: { reglas: true } },
-                },
-              },
-              valores: true,
+              producto: { include: { receta: true } },
             },
           },
         },
@@ -311,33 +251,20 @@ async function cambiarEstado(req, res, next) {
         const consumo = {}; // { id_material: cantidad_total }
 
         for (const item of pedido.items) {
-          const { cantidad, producto, valores } = item;
+          const { cantidad, producto } = item;
 
-          // Receta fija del producto
           for (const recetaEntry of producto.receta) {
             const mat = recetaEntry.id_material;
             const cant = Number(recetaEntry.cantidad_por_unidad) * cantidad;
             consumo[mat] = (consumo[mat] || 0) + cant;
           }
+        }
 
-          // Atributos variables: sumar consumo por cada valor de atributo del item
-          for (const valorAtributo of valores) {
-            const atributo = producto.atributos.find(
-              (a) => a.id_atributo === valorAtributo.id_atributo
-            );
-            if (!atributo) continue;
-
-            for (const regla of atributo.reglas) {
-              const mat = regla.id_material;
-              // Para atributos tipo 'numero', el valor multiplica la cantidad de material
-              let factor = 1;
-              if (atributo.tipo_dato === 'numero') {
-                factor = parseFloat(valorAtributo.valor) || 1;
-              }
-              const cant = Number(regla.cantidad_por_unidad_atributo) * factor * cantidad;
-              consumo[mat] = (consumo[mat] || 0) + cant;
-            }
-          }
+        // El stock guarda 4 decimales: redondear acá hace que lo validado, lo
+        // registrado en el movimiento y lo descontado sean el mismo número
+        // (3 fotos × 0.333333 hoja = 0.999999 → 1 hoja).
+        for (const mat of Object.keys(consumo)) {
+          consumo[mat] = Math.round(consumo[mat] * 1e4) / 1e4;
         }
 
         // 2. Validar stock suficiente para cada material
@@ -408,16 +335,52 @@ async function cambiarEstado(req, res, next) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DELETE /api/pedidos/:id
+// Se puede eliminar en cualquier estado. Si el pedido estaba completado, los
+// materiales que descontó vuelven al inventario con un movimiento de entrada,
+// todo en la misma transacción (RNF-06).
 // ─────────────────────────────────────────────────────────────────────────────
 async function eliminar(req, res, next) {
   try {
     const id = parseInt(req.params.id);
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ error: 'id de pedido inválido' });
+    }
 
-    await prisma.pedido.delete({ where: { id_pedido: id } });
+    const devueltos = await prisma.$transaction(async (tx) => {
+      const pedido = await tx.pedido.findUnique({
+        where: { id_pedido: id },
+        include: { movimientos: true },
+      });
+      if (!pedido) {
+        throw Object.assign(new Error('Pedido no encontrado'), { statusCode: 404 });
+      }
 
-    res.status(204).send();
+      const salidas = pedido.movimientos.filter((m) => m.tipo === 'salida');
+      for (const salida of salidas) {
+        // La entrada no se vincula al pedido porque este deja de existir; el
+        // motivo deja la traza. No toca costo_unitario_actual: no es una compra.
+        await tx.movimientoInventario.create({
+          data: {
+            id_material: salida.id_material,
+            tipo: 'entrada',
+            cantidad: salida.cantidad,
+            costo_unitario: salida.costo_unitario,
+            motivo: `Pedido #${id} eliminado (devolución de stock)`,
+          },
+        });
+        await tx.material.update({
+          where: { id_material: salida.id_material },
+          data: { stock_actual: { increment: salida.cantidad } },
+        });
+      }
+
+      await tx.pedido.delete({ where: { id_pedido: id } });
+      return salidas.length;
+    });
+
+    res.json({ eliminado: id, materiales_devueltos: devueltos });
   } catch (err) {
-    if (err.code === 'P2025') {
+    if (err.statusCode === 404 || err.code === 'P2025') {
       return res.status(404).json({ error: 'Pedido no encontrado' });
     }
     next(err);

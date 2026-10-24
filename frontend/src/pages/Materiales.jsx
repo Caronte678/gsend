@@ -3,7 +3,7 @@ import Layout from '../components/Layout';
 import ReponerModal from '../components/ReponerModal';
 import ConfirmModal from '../components/ConfirmModal';
 import { useToast } from '../context/ToastContext';
-import { moneyUnit } from '../utils/labels';
+import { moneyUnit, qty } from '../utils/labels';
 import api from '../services/api';
 
 const OVERLAY = { position: 'fixed', inset: 0, background: 'rgba(58,46,43,0.3)', zIndex: 0 };
@@ -188,10 +188,10 @@ export default function Materiales() {
                         <td className="fw-bold">{m.nombre}</td>
                         <td className="text-muted">{m.unidad_medida}</td>
                         <td style={getStockStyle(m)}>
-                          {Math.round(Number(m.stock_actual))}
+                          {qty(m.stock_actual)}
                           {Number(m.stock_actual) < Number(m.stock_minimo) && ' (!)'}
                         </td>
-                        <td className="text-muted">{Math.round(Number(m.stock_minimo))}</td>
+                        <td className="text-muted">{qty(m.stock_minimo)}</td>
                         <td>{moneyUnit(m.costo_unitario_actual)}</td>
                         <td>
                           <span className={`gs-badge gs-badge-${m.activo ? 'ok' : 'cancelado'}`}>
