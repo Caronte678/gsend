@@ -172,7 +172,10 @@ function RecetaModal({ producto, onClose }) {
               </div>
               <div className="col-6 col-md-3">
                 <label className="form-label">{form.modo === 'rinde' ? 'Unidades que salen' : 'Cantidad por unidad'}</label>
-                <input className="form-control form-control-sm" type="number" min="0.0001"
+                {/* El navegador valida contra min + k·step: con min 0.0001 y step 1
+                    rechazaría un "4", así que en modo rinde el mínimo es 1. */}
+                <input className="form-control form-control-sm" type="number"
+                  min={form.modo === 'rinde' ? '1' : '0.0001'}
                   step={form.modo === 'rinde' ? '1' : 'any'}
                   placeholder={form.modo === 'rinde' ? 'Ej: 3' : 'Ej: 2'} value={form.valor}
                   onChange={e => setForm(f => ({ ...f, valor: e.target.value }))} required />

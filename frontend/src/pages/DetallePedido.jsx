@@ -132,7 +132,7 @@ export default function DetallePedido() {
                 {pedido.notas && (
                   <div className="pt-2 mt-1" style={{ borderTop: '1px solid var(--clr-border-soft)' }}>
                     <div className="text-muted small mb-1">Notas</div>
-                    <div className="small">{pedido.notas}</div>
+                    <div className="small" style={{ whiteSpace: 'pre-line' }}>{pedido.notas}</div>
                   </div>
                 )}
               </div>
