@@ -7,6 +7,7 @@ const {
   crear,
   actualizar,
   reponer,
+  ajustar,
 } = require('../controllers/materiales.controller');
 
 router.use(requireAuth);
@@ -26,5 +27,9 @@ router.put('/:id', actualizar);
 // POST /api/materiales/:id/reponer — { cantidad, costo_unitario, motivo? }
 // Genera MovimientoInventario tipo 'entrada' y actualiza stock en la misma transacción.
 router.post('/:id/reponer', reponer);
+
+// POST /api/materiales/:id/ajustar — { stock_real, motivo? }
+// Corrige el stock a lo contado; la diferencia queda como movimiento de ajuste.
+router.post('/:id/ajustar', ajustar);
 
 module.exports = router;
