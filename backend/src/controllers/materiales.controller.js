@@ -151,4 +151,60 @@ async function reponer(req, res, next) {
   }
 }
 
-module.exports = { listar, obtener, crear, actualizar, reponer };
+// POST /api/materiales/:id/ajustar — { stock_real, motivo? }
+// Corrige el stock a la cantidad contada (p. ej. tras un error de carga).
+// No pisa el número: registra la diferencia como movimiento de entrada o salida
+// para que quede en el historial. No cambia costo_unitario_actual (no es una compra).
+async function ajustar(req, res, next) {
+  try {
+    const id = parseInt(req.params.id);
+    const { motivo } = req.body;
+    const stockReal = Number(req.body.stock_real);
+
+    if (req.body.stock_real === undefined || req.body.stock_real === '' ||
+        !Number.isFinite(stockReal) || stockReal < 0) {
+      return res.status(400).json({ error: 'stock_real es requerido y debe ser >= 0' });
+    }
+
+    const resultado = await prisma.$transaction(async (tx) => {
+      const material = await tx.material.findUnique({ where: { id_material: id } });
+      if (!material) {
+        throw Object.assign(new Error('Material no encontrado'), { statusCode: 404 });
+      }
+
+      // El stock guarda 4 decimales: redondear evita diferencias fantasma.
+      const nuevo = Math.round(stockReal * 1e4) / 1e4;
+      const diferencia = Math.round((nuevo - Number(material.stock_actual)) * 1e4) / 1e4;
+      if (diferencia === 0) {
+        throw Object.assign(new Error('El stock ya es esa cantidad: no hay nada que ajustar'), { statusCode: 400 });
+      }
+
+      const detalle = String(motivo ?? '').trim();
+      const movimiento = await tx.movimientoInventario.create({
+        data: {
+          id_material: id,
+          tipo: diferencia > 0 ? 'entrada' : 'salida',
+          cantidad: Math.abs(diferencia),
+          costo_unitario: material.costo_unitario_actual,
+          motivo: (detalle ? `Ajuste manual: ${detalle}` : 'Ajuste manual').slice(0, 200),
+        },
+      });
+
+      const materialActualizado = await tx.material.update({
+        where: { id_material: id },
+        data: { stock_actual: nuevo },
+      });
+
+      return { material: materialActualizado, movimiento };
+    });
+
+    res.status(201).json(resultado);
+  } catch (err) {
+    if (err.statusCode === 404 || err.statusCode === 400) {
+      return res.status(err.statusCode).json({ error: err.message });
+    }
+    next(err);
+  }
+}
+
+module.exports = { listar, obtener, crear, actualizar, reponer, ajustar };

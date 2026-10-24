@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import ReponerModal from '../components/ReponerModal';
+import AjustarStockModal from '../components/AjustarStockModal';
 import ConfirmModal from '../components/ConfirmModal';
 import { useToast } from '../context/ToastContext';
 import { moneyUnit, qty } from '../utils/labels';
@@ -68,7 +69,7 @@ function MaterialModal({ material, onClose, onSaved }) {
                   <input className="form-control" type="number" min="0" step="0.01" value={form.costo_unitario_actual} onChange={e => set('costo_unitario_actual', e.target.value)} disabled={editing} />
                 </div>
               </div>
-              {editing && <p className="text-muted small mb-0">Para modificar stock o costo usa "Reponer".</p>}
+              {editing && <p className="text-muted small mb-0">Para corregir el stock usá "Ajustar"; para registrar una compra (stock y costo) usá "Reponer".</p>}
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-outline-secondary btn-sm" onClick={onClose}>Cancelar</button>
@@ -201,6 +202,7 @@ export default function Materiales() {
                         <td>
                           <div className="d-flex gap-2">
                             <button className="btn btn-outline-secondary btn-sm" onClick={() => setModal({ type: 'reponer', material: m })}>Reponer</button>
+                            <button className="btn btn-outline-secondary btn-sm" onClick={() => setModal({ type: 'ajustar', material: m })}>Ajustar</button>
                             <button className="btn btn-outline-secondary btn-sm" onClick={() => setModal({ type: 'edit', material: m })}>Editar</button>
                             {m.activo
                               ? <button className="btn btn-danger btn-sm" onClick={() => { setDesactivarError(null); setADesactivar(m); }}>Quitar</button>
@@ -222,6 +224,10 @@ export default function Materiales() {
       )}
       {modal?.type === 'reponer' && (
         <ReponerModal material={modal.material} onClose={() => setModal(null)} onSaved={() => { setModal(null); cargar(); }} />
+      )}
+      {modal?.type === 'ajustar' && (
+        <AjustarStockModal material={modal.material} onClose={() => setModal(null)}
+          onSaved={() => { toast.ok(`Stock de «${modal.material.nombre}» ajustado`); setModal(null); cargar(); }} />
       )}
 
       {aDesactivar && (
