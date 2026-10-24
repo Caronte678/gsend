@@ -4,7 +4,7 @@ import Layout from '../components/Layout';
 import ConfirmModal from '../components/ConfirmModal';
 import { useToast } from '../context/ToastContext';
 import api from '../services/api';
-import { ESTADO_PEDIDO_LABELS as LABELS, estadoPagoLabel, money } from '../utils/labels';
+import { ESTADO_PEDIDO_LABELS as LABELS, estadoPagoLabel, money, qty } from '../utils/labels';
 
 const OVERLAY = { position: 'fixed', inset: 0, background: 'rgba(58,46,43,0.3)', zIndex: 0 };
 const ESTADOS = ['pendiente', 'confirmado', 'completado', 'cancelado'];
@@ -27,7 +27,7 @@ function EstadoModal({ pedido, onClose, onSaved }) {
       const msg     = err.response?.data?.error ?? 'Error al cambiar estado';
       const detalle = err.response?.data?.detalle;
       setError(detalle
-        ? `${msg}: ${detalle.map(d => `${d.material} (tiene ${Math.round(d.stock_actual)}, necesita ${Math.round(d.requerido)})`).join(', ')}`
+        ? `${msg}: ${detalle.map(d => `${d.material} (tiene ${qty(d.stock_actual)}, necesita ${qty(d.requerido)})`).join(', ')}`
         : msg
       );
     } finally { setLoading(false); }
@@ -107,7 +107,9 @@ export default function Pedidos() {
     try {
       await api.delete(`/pedidos/${p.id_pedido}`);
       setAEliminar(null);
-      toast.ok(`Pedido #${p.id_pedido} eliminado`);
+      toast.ok(p.estado === 'completado'
+        ? `Pedido #${p.id_pedido} eliminado y materiales devueltos al inventario`
+        : `Pedido #${p.id_pedido} eliminado`);
       cargar();
     } catch (err) {
       setEliminarError(err.response?.data?.error ?? 'No se pudo eliminar el pedido');
@@ -188,7 +190,7 @@ export default function Pedidos() {
                             <div className="d-flex gap-2">
                               <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(`/pedidos/${p.id_pedido}`)}>Ver</button>
                               <button className="btn btn-outline-secondary btn-sm" onClick={() => setModal({ type: 'estado', pedido: p })}>Estado</button>
-                              {p.estado === 'pendiente' && <button className="btn btn-danger btn-sm" onClick={() => { setEliminarError(null); setAEliminar(p); }}>Quitar</button>}
+                              <button className="btn btn-danger btn-sm" onClick={() => { setEliminarError(null); setAEliminar(p); }}>Quitar</button>
                             </div>
                           </td>
                         </tr>
@@ -209,7 +211,11 @@ export default function Pedidos() {
       {aEliminar && (
         <ConfirmModal
           title="Eliminar pedido"
-          message={`El pedido #${aEliminar.id_pedido} de ${aEliminar.cliente_nombre} y sus pagos se eliminarán de forma permanente. Esta acción no se puede deshacer.`}
+          message={`El pedido #${aEliminar.id_pedido} de ${aEliminar.cliente_nombre} y sus pagos se eliminarán de forma permanente.`
+            + (aEliminar.estado === 'completado'
+              ? ' Como ya estaba completado, los materiales que usó vuelven al inventario.'
+              : '')
+            + ' Esta acción no se puede deshacer.'}
           confirmLabel="Eliminar"
           variant="danger"
           loading={eliminando}

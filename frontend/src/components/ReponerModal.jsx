@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import api from '../services/api';
+import { qty } from '../utils/labels';
 
 const OVERLAY = { position: 'fixed', inset: 0, background: 'rgba(58,46,43,0.3)', zIndex: 0 };
 
@@ -38,7 +39,7 @@ export default function ReponerModal({ material, onClose, onSaved }) {
             <div className="modal-body d-flex flex-column gap-3">
               {error && <div className="alert alert-danger py-2">&#9888; {error}</div>}
               <div className="alert alert-info py-2 mb-0">
-                Stock actual: <strong>{Math.round(Number(material.stock_actual))} {material.unidad_medida}</strong>
+                Stock actual: <strong>{qty(material.stock_actual)} {material.unidad_medida}</strong>
               </div>
               <div className="row g-3">
                 <div className="col">

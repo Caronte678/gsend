@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
-import { estadoPedidoLabel, estadoPagoLabel, money } from '../utils/labels';
+import { estadoPedidoLabel, estadoPagoLabel, money, qty } from '../utils/labels';
 
 function StatCard({ icon, label, value, sub, color }) {
   return (
@@ -125,8 +125,8 @@ export default function Dashboard() {
                         </div>
                         <div className="stock-bar-wrapper">
                           <div className="d-flex justify-content-between" style={{ fontSize: 11, color: 'var(--clr-text-muted)' }}>
-                            <span>Actual: {Math.round(Number(m.stock_actual))} {m.unidad_medida}</span>
-                            <span>Min: {Math.round(Number(m.stock_minimo))}</span>
+                            <span>Actual: {qty(m.stock_actual)} {m.unidad_medida}</span>
+                            <span>Min: {qty(m.stock_minimo)}</span>
                           </div>
                           <div className="stock-bar-track">
                             <div className="stock-bar-fill stock-bar-danger" style={{ width: `${pct}%` }} />
